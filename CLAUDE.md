@@ -111,6 +111,16 @@ Logger.set_module_level("WiFiManager", LogLevel.ERROR)
 
 ```
 src/                    # All source code (deployed to Pico root)
+  ui/                   # UI framework
+    app.py              # App class — hardware init + render loop
+    page.py             # Page base class — lifecycle, widgets, touch
+    widget.py           # Widgets — Label, Button, Container
+    theme.py            # Colors, font scales, spacing constants
+  pages/                # Application pages
+    splash_page.py      # Boot splash with progress animation
+    ap_mode_page.py     # WiFi AP mode setup instructions
+    clock_page.py       # Clock — digital/analog modes, NTP sync
+    demo_page.py        # Hello World demo page
   templates/            # HTML for provisioning UI
   main.py               # Production entry point
   main_debug.py         # Debug entry point (Pico Explorer display)

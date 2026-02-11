@@ -2,6 +2,8 @@
 
 基於 [Pimoroni Presto](https://shop.pimoroni.com/products/presto) (RP2350) 的桌面副螢幕裝置。透過 240x240 觸控顯示器，在桌面上即時顯示各類資訊。
 
+[English](README.md)
+
 ## 硬體需求
 
 - **Pimoroni Presto** — RP2350 + 240x240 IPS 觸控螢幕、WiFi、7 RGB LEDs、加速度計、蜂鳴器、SD 卡槽
