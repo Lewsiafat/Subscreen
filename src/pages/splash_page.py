@@ -27,19 +27,18 @@ class SplashPage(Page):
     """開機 Splash 畫面。
 
     顯示品牌名稱、進度條動畫、WiFi 連線狀態。
-    連線成功後自動跳轉到下一個頁面。
+    頁面切換由外部（main.py）透過事件系統驅動。
     """
 
     # 最少顯示時間（毫秒）
     MIN_DISPLAY_MS = 3000
 
-    def __init__(self, app, next_page_class=None):
+    def __init__(self, app):
         super().__init__(app)
-        self._next_page_class = next_page_class
         self._progress = 0.0
         self._target = 0.0
         self._start_time = None
-        self._wifi_connected = False
+        self.ready = False  # 動畫完成旗標，供外部查詢
 
         # 品牌名稱
         self.add(Label(
@@ -91,7 +90,6 @@ class SplashPage(Page):
         elif status == STATE_CONNECTING:
             self._target = 0.6
         elif status == STATE_CONNECTED:
-            self._wifi_connected = True
             self._target = 1.0
         elif status == STATE_FAIL:
             self._target = 0.3
@@ -103,14 +101,10 @@ class SplashPage(Page):
         if abs(diff) > 0.005:
             self._progress += diff * 0.08
 
-        # 跳轉條件：WiFi 已連線 + 最少顯示時間 + 進度條接近滿
-        if (self._wifi_connected and
-                self._next_page_class and
-                elapsed >= self.MIN_DISPLAY_MS and
-                self._progress > 0.95):
-            self.app.set_screen(
-                self._next_page_class(self.app)
-            )
+        # 標記動畫完成（供外部事件處理器查詢）
+        # 條件：最少顯示時間 + 進度條接近目標值
+        self.ready = (elapsed >= self.MIN_DISPLAY_MS and
+                      abs(self._target - self._progress) < 0.02)
 
     def draw(self, display, vector, offset_x=0):
         self._draw_background(display)
