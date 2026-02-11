@@ -1,0 +1,19 @@
+# Editor Settings
+.vscode/
+.micropico
+
+# OS Metadata
+.DS_Store
+Thumbs.db
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Project Specific Secret Config
+wifi_config.json
+
+# Conductor Temporary Files
+.gemini/tmp/

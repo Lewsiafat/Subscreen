@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Picore-W Setup</title>
+    <style>
+        body { font-family: -apple-system, sans-serif; background: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .container { background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 100%; max-width: 320px; }
+        h1 { text-align: center; color: #1a73e8; margin-bottom: 1.5rem; font-size: 1.5rem; }
+        form { display: flex; flex-direction: column; gap: 1rem; }
+        input { padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px; font-size: 1rem; }
+        button, .btn { background: #1a73e8; color: white; border: none; padding: 0.75rem; border-radius: 6px; font-size: 1rem; font-weight: bold; cursor: pointer; text-align: center; }
+        .btn-scan { background: #5f6368; margin-bottom: 0.5rem; }
+        .btn-scan:disabled { background: #bbb; cursor: not-allowed; }
+        .note { font-size: 0.8rem; color: #666; text-align: center; margin-top: 1rem; }
+        .scan-section { margin-bottom: 1rem; }
+        .scan-list { list-style: none; padding: 0; margin: 0.5rem 0 0 0; max-height: 200px; overflow-y: auto; }
+        .scan-list li { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0.75rem; border: 1px solid #eee; border-radius: 6px; margin-bottom: 4px; cursor: pointer; }
+        .scan-list li:hover { background: #e8f0fe; }
+        .ssid-name { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 200px; }
+        .signal { font-size: 0.8rem; color: #666; white-space: nowrap; margin-left: 8px; }
+        .loading { text-align: center; color: #666; padding: 1rem 0; display: none; }
+        .loading .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid #ddd; border-top-color: #1a73e8; border-radius: 50%; animation: spin 0.8s linear infinite; vertical-align: middle; margin-right: 6px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .scan-empty { text-align: center; color: #999; padding: 0.5rem 0; font-size: 0.85rem; display: none; }
+        .lock { font-size: 0.75rem; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Picore-W Setup</h1>
+        <div class="scan-section">
+            <button type="button" class="btn btn-scan" id="scanBtn" onclick="scanWifi()">Scan WiFi</button>
+            <div class="loading" id="loading"><span class="spinner"></span>Scanning...</div>
+            <div class="scan-empty" id="scanEmpty">No networks found.</div>
+            <ul class="scan-list" id="scanList"></ul>
+        </div>
+        <form action="/configure" method="POST">
+            <input type="text" name="ssid" id="ssidInput" placeholder="WiFi Name (SSID)" required>
+            <input type="password" name="password" placeholder="WiFi Password" required>
+            <button type="submit">Connect</button>
+        </form>
+        <div class="note">Scan for networks or enter WiFi credentials manually.</div>
+    </div>
+    <script>
+        function signalIcon(rssi) {
+            if (rssi >= -50) return '\u2588\u2588\u2588';
+            if (rssi >= -65) return '\u2588\u2588\u2581';
+            if (rssi >= -75) return '\u2588\u2581\u2581';
+            return '\u2581\u2581\u2581';
+        }
+        function scanWifi() {
+            var btn = document.getElementById('scanBtn');
+            var loading = document.getElementById('loading');
+            var list = document.getElementById('scanList');
+            var empty = document.getElementById('scanEmpty');
+            btn.disabled = true;
+            loading.style.display = 'block';
+            empty.style.display = 'none';
+            list.innerHTML = '';
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', '/scan', true);
+            xhr.timeout = 15000;
+            xhr.onload = function() {
+                loading.style.display = 'none';
+                btn.disabled = false;
+                if (xhr.status === 200) {
+                    var networks = JSON.parse(xhr.responseText);
+                    if (networks.length === 0) {
+                        empty.style.display = 'block';
+                        return;
+                    }
+                    for (var i = 0; i < networks.length; i++) {
+                        var li = document.createElement('li');
+                        li.setAttribute('data-ssid', networks[i].ssid);
+                        li.onclick = function() {
+                            document.getElementById('ssidInput').value = this.getAttribute('data-ssid');
+                        };
+                        var span1 = document.createElement('span');
+                        span1.className = 'ssid-name';
+                        span1.textContent = networks[i].ssid;
+                        if (networks[i].security > 0) {
+                            span1.textContent += ' \uD83D\uDD12';
+                        }
+                        var span2 = document.createElement('span');
+                        span2.className = 'signal';
+                        span2.textContent = signalIcon(networks[i].rssi) + ' ' + networks[i].rssi + 'dBm';
+                        li.appendChild(span1);
+                        li.appendChild(span2);
+                        list.appendChild(li);
+                    }
+                }
+            };
+            xhr.onerror = function() {
+                loading.style.display = 'none';
+                btn.disabled = false;
+                empty.style.display = 'block';
+                empty.textContent = 'Scan failed. Please try again.';
+            };
+            xhr.ontimeout = function() {
+                loading.style.display = 'none';
+                btn.disabled = false;
+                empty.style.display = 'block';
+                empty.textContent = 'Scan timed out. Please try again.';
+            };
+            xhr.send();
+        }
+    </script>
+</body>
+</html>
