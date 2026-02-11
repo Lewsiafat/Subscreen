@@ -1,0 +1,34 @@
+"""UI Theme — 顏色、字型大小、間距統一定義。"""
+
+
+# --- 顏色 (R, G, B) ---
+BLACK = (0, 0, 0)
+WHITE = (255, 255, 255)
+GRAY = (128, 128, 128)
+DARK_GRAY = (64, 64, 64)
+LIGHT_GRAY = (192, 192, 192)
+
+RED = (255, 0, 0)
+GREEN = (0, 255, 0)
+BLUE = (0, 0, 255)
+YELLOW = (255, 255, 0)
+CYAN = (0, 255, 255)
+
+# 主題色
+PRIMARY = (0, 120, 255)
+SECONDARY = (100, 100, 100)
+BACKGROUND = BLACK
+TEXT_COLOR = WHITE
+BUTTON_BG = PRIMARY
+BUTTON_PRESSED_BG = (0, 80, 180)
+BUTTON_TEXT = WHITE
+
+# --- 字型大小 (PicoGraphics scale) ---
+FONT_SMALL = 1
+FONT_MEDIUM = 2
+FONT_LARGE = 3
+FONT_XLARGE = 4
+
+# --- 間距 ---
+PADDING = 8
+MARGIN = 4
