@@ -58,8 +58,10 @@ class ClockPage(Page):
         self._anim_direction = 0  # +1 右滑出, -1 左滑出
         self._next_mode = None
 
-        # 觸控防抖
+        # 雙擊偵測
         self._touch_cooldown = 0
+        self._last_tap_time = 0
+        self._double_tap_ms = 400  # 雙擊最大間隔
 
         # 螢幕保護漂移
         self._drift_x = 0.0
@@ -169,10 +171,6 @@ class ClockPage(Page):
         return time.localtime(local)
 
     def update(self):
-        # 觸控冷卻（每幀遞減）
-        if self._touch_cooldown > 0:
-            self._touch_cooldown -= 1
-
         if self._animating:
             self._update_animation()
             return
@@ -490,20 +488,28 @@ class ClockPage(Page):
             display.line(x1, y1 + d, x2, y2 + d)
 
     def handle_touch(self, tx, ty):
-        """點擊螢幕切換模式。"""
-        if self._animating or self._touch_cooldown > 0:
+        """雙擊螢幕切換數位/類比模式。"""
+        if self._animating:
             return False
 
-        self._touch_cooldown = 10  # ~300ms 冷卻
+        now = time.ticks_ms()
+        elapsed = time.ticks_diff(now, self._last_tap_time)
+        self._last_tap_time = now
 
-        # 啟動滑動動畫
+        if elapsed > self._double_tap_ms:
+            # 第一次點擊，等待第二次
+            return False
+
+        # 雙擊確認 → 切換模式
+        self._last_tap_time = 0  # 重置，避免連續觸發
+
         w = self.app.width
         if self._mode == MODE_DIGITAL:
             self._next_mode = MODE_ANALOG
-            self._anim_direction = -1  # 向左滑出
+            self._anim_direction = -1
         else:
             self._next_mode = MODE_DIGITAL
-            self._anim_direction = 1   # 向右滑出
+            self._anim_direction = 1
 
         self._anim_offset = 0.0
         self._anim_target = self._anim_direction * w

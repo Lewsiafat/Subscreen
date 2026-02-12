@@ -3,6 +3,7 @@ from wifi_manager import WiFiManager
 from ui.app import App
 from pages.splash_page import SplashPage
 from pages.clock_page import ClockPage
+from pages.weather_page import WeatherPage
 from pages.ap_mode_page import ApModePage
 
 
@@ -19,12 +20,16 @@ async def main():
 
     # 事件驅動頁面路由
     def on_connected(ip):
-        """WiFi 連線成功 → 等 Splash 動畫完成後跳轉 ClockPage。"""
+        """WiFi 連線成功 → 建立頁面序列，滑動切換。"""
         async def _wait_and_switch():
             splash = app._current_page
             while isinstance(splash, SplashPage) and not splash.ready:
                 await asyncio.sleep_ms(100)
-            app.set_screen(ClockPage(app))
+            # 建立可滑動切換的頁面序列
+            clock = ClockPage(app)
+            weather = WeatherPage(app)
+            app.set_screen(clock)
+            app.set_pages([clock, weather])
         asyncio.create_task(_wait_and_switch())
 
     def on_ap_mode(ssid):
