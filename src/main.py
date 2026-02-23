@@ -4,6 +4,7 @@ from ui.app import App
 from pages.splash_page import SplashPage
 from pages.clock_page import ClockPage
 from pages.weather_page import WeatherPage
+from pages.calendar_page import CalendarPage
 from pages.ap_mode_page import ApModePage
 
 
@@ -28,8 +29,9 @@ async def main():
             # 建立可滑動切換的頁面序列
             clock = ClockPage(app)
             weather = WeatherPage(app)
+            calendar = CalendarPage(app)
             app.set_screen(clock)
-            app.set_pages([clock, weather])
+            app.set_pages([clock, weather, calendar])
         asyncio.create_task(_wait_and_switch())
 
     def on_ap_mode(ssid):
