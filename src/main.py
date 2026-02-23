@@ -5,6 +5,7 @@ from pages.splash_page import SplashPage
 from pages.clock_page import ClockPage
 from pages.weather_page import WeatherPage
 from pages.calendar_page import CalendarPage
+from pages.market_page import MarketPage
 from pages.ap_mode_page import ApModePage
 
 
@@ -30,8 +31,9 @@ async def main():
             clock = ClockPage(app)
             weather = WeatherPage(app)
             calendar = CalendarPage(app)
+            market = MarketPage(app)
             app.set_screen(clock)
-            app.set_pages([clock, weather, calendar])
+            app.set_pages([clock, weather, calendar, market])
         asyncio.create_task(_wait_and_switch())
 
     def on_ap_mode(ssid):
