@@ -121,6 +121,7 @@ src/                    # All source code (deployed to Pico root)
     ap_mode_page.py     # WiFi AP mode setup instructions
     clock_page.py       # Clock — digital/analog modes, NTP sync
     weather_page.py     # Weather — real-time data via Open-Meteo API
+    calendar_page.py    # Calendar — monthly grid, today highlight, touch navigation
     demo_page.py        # Hello World demo page
   templates/            # HTML for provisioning UI
   main.py               # Production entry point

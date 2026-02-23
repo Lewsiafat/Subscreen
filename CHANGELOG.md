@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.3.0] - 2026-02-23
+
+### Added
+- Calendar page with monthly grid view and today highlight
+- Touch navigation: tap left 1/3 to go to previous month, tap right 1/3 for next month
+- Automatic day-change detection to refresh today's highlight at midnight
+- Page sequence extended to Clock → Weather → Calendar (swipe left to navigate)
+
 ## [0.2.0] - 2026-02-23
 
 ### Added
