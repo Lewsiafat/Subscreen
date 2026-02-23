@@ -14,6 +14,7 @@ A desktop sub-screen device based on [Pimoroni Presto](https://shop.pimoroni.com
 - **Clock Page** — Digital/analog dual modes, toggle by tapping, screen saver drift animation.
 - **Weather Page** — Real-time weather data via async Open-Meteo API, swipe to navigate.
 - **Calendar Page** — Monthly calendar grid, today highlighted, tap to switch months.
+- **Market Page** — Real-time BTC/ETH via Binance WebSocket + SPY/AAPL/TWII/2330 via Stooq CSV API.
 - **NTP Time Sync** — Auto-sync after WiFi connection, configurable time zone.
 - **WiFi Auto Management** — Auto-retry on connection failure, enters AP mode after exceeding retry limits.
 - **Captive Portal Setup** — Configure WiFi password via mobile browser in AP mode.
@@ -62,6 +63,7 @@ src/                    # Source code (deploy to Pico root)
     clock_page.py       # Clock — Digital/analog modes, NTP sync
     weather_page.py     # Weather — Real-time data via Open-Meteo API
     calendar_page.py    # Calendar — Monthly grid, today highlight, touch navigation
+    market_page.py      # Market — Binance WebSocket crypto + Stooq stock quotes
   wifi_manager.py       # WiFi state machine core
   provisioning.py       # Web setup interface
   config_manager.py     # Config file management
@@ -92,5 +94,5 @@ Page Flow:
 SplashPage → ClockPage (WiFi connection success)
            → ApModePage (WiFi connection failed, enter AP mode)
 
-ClockPage ←swipe→ WeatherPage ←swipe→ CalendarPage
+ClockPage ←swipe→ WeatherPage ←swipe→ CalendarPage ←swipe→ MarketPage
 ```

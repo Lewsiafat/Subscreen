@@ -14,6 +14,7 @@
 - **時鐘頁面** — 數位/類比雙模式，點擊切換，螢幕保護漂移動畫
 - **天氣頁面** — 透過非同步 Open-Meteo API 取得即時天氣資訊，左右滑動切換頁面
 - **日曆頁面** — 月曆格式顯示，今日高亮，點擊左右切換月份
+- **行情頁面** — BTC/ETH 透過 Binance WebSocket 即時推送 + SPY/AAPL/TWII/2330 透過 Stooq CSV API 輪詢
 - **NTP 時間同步** — WiFi 連線後自動同步，可設定時區
 - **WiFi 自動管理** — 連線失敗自動重試，超過上限後進入 AP 模式
 - **Captive Portal 設定** — AP 模式下透過手機瀏覽器設定 WiFi 密碼
@@ -62,6 +63,7 @@ src/                    # 原始碼（部署至 Pico 根目錄）
     clock_page.py       # 時鐘 — 數位/類比模式、NTP 同步
     weather_page.py     # 天氣 — 透過 Open-Meteo API 取得即時資料
     calendar_page.py    # 日曆 — 月曆格、今日高亮、觸控月份切換
+    market_page.py      # 行情 — Binance WebSocket 加密貨幣 + Stooq 股票報價
   wifi_manager.py       # WiFi 狀態機核心
   provisioning.py       # Web 設定介面
   config_manager.py     # 設定檔管理
@@ -92,5 +94,5 @@ IDLE → CONNECTING → CONNECTED（每 2 秒健康檢查）
 SplashPage → ClockPage（WiFi 連線成功）
            → ApModePage（WiFi 連線失敗，進入 AP 模式）
 
-ClockPage ←滑動→ WeatherPage ←滑動→ CalendarPage
+ClockPage ←滑動→ WeatherPage ←滑動→ CalendarPage ←滑動→ MarketPage
 ```

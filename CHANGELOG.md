@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.4.0] - 2026-02-23
+
+### Added
+- Market page with real-time cryptocurrency prices and stock quotes
+- BTC/ETH live feed via Binance WebSocket (`wss://stream.binance.com:9443`) with auto-reconnect and ping/pong keepalive
+- SPY/AAPL/TWII/2330 stock data via Stooq CSV API (polls every 5 minutes)
+- WebSocket status indicator in status bar: Live (green) / Reconnecting (red)
+- Market-closed periods show `--` gracefully (Stooq N/D handling)
+- Color scheme: green for gains, red for losses (western style)
+- Page sequence extended to Clock → Weather → Calendar → Market
+
 ## [0.3.0] - 2026-02-23
 
 ### Added

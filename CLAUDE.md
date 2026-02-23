@@ -122,6 +122,7 @@ src/                    # All source code (deployed to Pico root)
     clock_page.py       # Clock — digital/analog modes, NTP sync
     weather_page.py     # Weather — real-time data via Open-Meteo API
     calendar_page.py    # Calendar — monthly grid, today highlight, touch navigation
+    market_page.py      # Market — Binance WebSocket crypto + Stooq stock quotes
     demo_page.py        # Hello World demo page
   templates/            # HTML for provisioning UI
   main.py               # Production entry point
