@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.2.0] - 2026-02-23
+
+### Added
+- Weather page with real-time weather data via async Open-Meteo API
+- Swipe left/right gesture navigation between Clock and Weather pages
+
 ## [0.1.0] - 2026-02-11
 
 ### Added

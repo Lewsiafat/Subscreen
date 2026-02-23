@@ -1,88 +1,94 @@
 # Subscreen
 
-基於 [Pimoroni Presto](https://shop.pimoroni.com/products/presto) (RP2350) 的桌面副螢幕裝置。透過 240x240 觸控顯示器，在桌面上即時顯示各類資訊。
+A desktop sub-screen device based on [Pimoroni Presto](https://shop.pimoroni.com/products/presto) (RP2350). Displays various real-time information on your desktop via a 240x240 touch display.
 
-## 硬體需求
+[繁體中文](README.zh-TW.md)
 
-- **Pimoroni Presto** — RP2350 + 240x240 IPS 觸控螢幕、WiFi、7 RGB LEDs、加速度計、蜂鳴器、SD 卡槽
-- USB-C 傳輸線（部署與供電）
+## Hardware Requirements
 
-## 功能特色
+- **Pimoroni Presto** — RP2350 + 240x240 IPS touch screen, WiFi, 7 RGB LEDs, accelerometer, buzzer, SD card slot
+- USB-C cable (for deployment and power)
 
-- **時鐘頁面** — 數位/類比雙模式，點擊切換，螢幕保護漂移動畫
-- **NTP 時間同步** — WiFi 連線後自動同步，可設定時區
-- **WiFi 自動管理** — 連線失敗自動重試，超過上限後進入 AP 模式
-- **Captive Portal 設定** — AP 模式下透過手機瀏覽器設定 WiFi 密碼
-- **觸控 UI 框架** — Page/Widget 架構，支援頁面切換動畫
-- **Debug 儀表板** — 即時顯示 WiFi 狀態、設定、日誌（需 Pico Explorer）
+## Features
 
-## 快速開始
+- **Clock Page** — Digital/analog dual modes, toggle by tapping, screen saver drift animation.
+- **Weather Page** — Real-time weather data via async Open-Meteo API, swipe to navigate.
+- **NTP Time Sync** — Auto-sync after WiFi connection, configurable time zone.
+- **WiFi Auto Management** — Auto-retry on connection failure, enters AP mode after exceeding retry limits.
+- **Captive Portal Setup** — Configure WiFi password via mobile browser in AP mode.
+- **Touch UI Framework** — Page/Widget architecture, supports page transition animations.
+- **Debug Dashboard** — Real-time display of WiFi status, settings, and logs (requires Pico Explorer).
 
-### 安裝工具
+## Quick Start
+
+### Install Tools
 
 ```bash
 pip install mpremote
 ```
 
-### 部署到裝置
+### Deploy to Device
 
-將 Presto 透過 USB 連接電腦，然後：
+Connect Presto to your computer via USB, then:
 
 ```bash
-# 使用 Claude Code skill
+# Using Claude Code skill
 /deploy
 
-# 或手動
+# Or manually
 mpremote cp -r src/ :
 ```
 
-### 執行
+### Run
 
 ```bash
-# 使用 Claude Code skill
+# Using Claude Code skill
 /run
 ```
 
-## 專案結構
+## Project Structure
 
 ```
-src/                    # 原始碼（部署至 Pico 根目錄）
-  ui/                   # UI 框架
-    app.py              # App — 硬體初始化 + 渲染迴圈
-    page.py             # Page 基類 — 生命週期、觸控分派
+src/                    # Source code (deploy to Pico root)
+  ui/                   # UI Framework
+    app.py              # App — Hardware init + rendering loop
+    page.py             # Page base class — Lifecycle, touch dispatching
     widget.py           # Widget — Label, Button, Container
-    theme.py            # 主題色彩、字型、間距
-  pages/                # 應用頁面
-    splash_page.py      # 開機動畫 + WiFi 狀態
-    ap_mode_page.py     # AP 模式設定引導
-    clock_page.py       # 時鐘 — 數位/類比模式、NTP 同步
-  wifi_manager.py       # WiFi 狀態機核心
-  provisioning.py       # Web 設定介面
-  config_manager.py     # 設定檔管理
-  web_server.py         # Async HTTP 伺服器
+    theme.py            # Theme colors, fonts, spacing
+  pages/                # Application pages
+    splash_page.py      # Boot animation + WiFi status
+    ap_mode_page.py     # AP mode setup guide
+    clock_page.py       # Clock — Digital/analog modes, NTP sync
+    weather_page.py     # Weather — Real-time data via Open-Meteo API
+  wifi_manager.py       # WiFi state machine core
+  provisioning.py       # Web setup interface
+  config_manager.py     # Config file management
+  web_server.py         # Async HTTP server
   dns_server.py         # Captive Portal DNS
-  logger.py             # 日誌系統
-  main.py               # 主程式進入點
-  main_debug.py         # Debug 模式進入點
-  templates/            # 設定頁面 HTML
-ref_doc/                # 參考文件
-specs/                  # 功能規格文件
+  logger.py             # Logging system
+  main.py               # Main entry point
+  main_debug.py         # Debug mode entry point
+  templates/            # Setup page HTML
+ref_doc/                # Reference documents
+specs/                  # Functional specification documents
 ```
 
-## 技術架構
+## Technical Architecture
 
-建立在 **Picore-W** WiFi 基礎設施之上，使用 MicroPython + `uasyncio` 非同步架構。
+Built on top of the **Picore-W** WiFi infrastructure, using MicroPython + `uasyncio` asynchronous architecture.
 
-WiFi 生命週期：
-
-```
-IDLE → CONNECTING → CONNECTED（每 2 秒健康檢查）
-                  ↘ FAIL → AP_MODE（Captive Portal 設定）
-```
-
-頁面流程：
+WiFi Lifecycle:
 
 ```
-SplashPage → ClockPage（WiFi 連線成功）
-           → ApModePage（WiFi 連線失敗，進入 AP 模式）
+IDLE → CONNECTING → CONNECTED (Health check every 2s)
+                  ↘ FAIL → AP_MODE (Captive Portal setup)
+```
+
+Page Flow:
+
+```
+SplashPage → ClockPage (WiFi connection success)
+           → ApModePage (WiFi connection failed, enter AP mode)
+
+ClockPage ←swipe→ WeatherPage
 ```
