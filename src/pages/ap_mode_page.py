@@ -1,10 +1,12 @@
 """AP Mode Page — 顯示 AP 連接資訊，引導使用者設定 WiFi。"""
 
+import machine
 from ui.page import Page
-from ui.widget import Label, Container
+from ui.widget import Label, Container, Button
 from ui.theme import (
     WHITE, GRAY, DARK_GRAY, CYAN, FONT_SMALL, FONT_MEDIUM, PADDING,
 )
+from config_manager import ConfigManager
 
 
 class ApModePage(Page):
@@ -75,8 +77,20 @@ class ApModePage(Page):
 
         self.add(info_box)
 
-        # 底部狀態
-        self.add(Label(
-            x=30, y=215, text="Waiting for setup...",
-            color=GRAY, scale=FONT_SMALL,
-        ))
+        # 底部狀態或按鈕
+        saved_ssid, _ = ConfigManager.get_wifi_credentials()
+        if saved_ssid:
+            self.add(Button(
+                x=20, y=202, w=95, h=30, text="Reconnect",
+                scale=FONT_SMALL, on_press=lambda: machine.reset()
+            ))
+
+            self.add(Button(
+                x=125, y=202, w=95, h=30, text="Reboot",
+                scale=FONT_SMALL, on_press=lambda: machine.reset()
+            ))
+        else:
+            self.add(Label(
+                x=30, y=215, text="Waiting for setup...",
+                color=GRAY, scale=FONT_SMALL,
+            ))
