@@ -116,6 +116,13 @@ class WeatherPage(Page):
         self._fetching = False
         self._error = None
 
+        # --- 地點名稱（最頂部）---
+        self._location_label = Label(
+            x=0, y=2, text="",
+            color=GRAY, scale=FONT_SMALL,
+        )
+        self.add(self._location_label)
+
         # --- 即時天氣 widgets（上半部）---
         self._weather_label = Label(
             x=0, y=12, text="---",
@@ -189,12 +196,32 @@ class WeatherPage(Page):
             self._lat = new_lat
             self._lon = new_lon
             self._last_fetch = 0  # 強制重新抓取
+        loc = ConfigManager.get_setting("weather_location", "")
+        self._location_label.set_text(loc)
         if self._data:
             self._update_display()
         asyncio.create_task(self._fetch_weather())
 
     def on_exit(self):
         self._fetching = False
+
+    def on_resume(self):
+        """Settings overlay 關閉後重新讀取位置設定。"""
+        new_lat = ConfigManager.get_setting(
+            "weather_lat", self._lat
+        )
+        new_lon = ConfigManager.get_setting(
+            "weather_lon", self._lon
+        )
+        if new_lat != self._lat or new_lon != self._lon:
+            self._lat = new_lat
+            self._lon = new_lon
+            self._last_fetch = 0
+            asyncio.create_task(self._fetch_weather())
+        loc = ConfigManager.get_setting("weather_location", "")
+        self._location_label.set_text(loc)
+        if self._data:
+            self._update_display()
 
     async def _fetch_weather(self):
         """非阻塞取得天氣資料。"""
@@ -301,6 +328,11 @@ class WeatherPage(Page):
             temp_lbl.set_text(tstr)
             tstr_w = d.measure_text(tstr, FONT_SMALL)
             temp_lbl.x = i * col_w + (col_w - tstr_w) // 2
+
+        loc_text = self._location_label.text
+        if loc_text:
+            lw = d.measure_text(loc_text, FONT_SMALL)
+            self._location_label.x = (w - lw) // 2
 
         status_text = self._status_label.text
         sw = d.measure_text(status_text, FONT_SMALL)

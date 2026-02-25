@@ -180,6 +180,8 @@ class App:
             self._overlay_animating = False
             if self._overlay_page:
                 self._overlay_page.on_exit()
+            if self._current_page:
+                self._current_page.on_resume()
 
     async def run(self, initial_page_class):
         """啟動主迴圈。

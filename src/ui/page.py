@@ -65,3 +65,7 @@ class Page:
     def on_exit(self):
         """頁面離開時呼叫。"""
         pass
+
+    def on_resume(self):
+        """Overlay 關閉後底層頁面恢復時呼叫。"""
+        pass
