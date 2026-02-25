@@ -123,8 +123,11 @@ src/                    # All source code (deployed to Pico root)
     weather_page.py     # Weather — real-time data via Open-Meteo API
     calendar_page.py    # Calendar — monthly grid, today highlight, touch navigation
     market_page.py      # Market — Binance WebSocket crypto + Stooq stock quotes
+    settings_page.py    # Settings — QR Code + web UI entry point
     demo_page.py        # Hello World demo page
+  settings_server.py    # Web settings API (/api/settings, /api/pages, /api/backlight)
   templates/            # HTML for provisioning UI
+    settings.html       # Web settings UI (pages management, location, timezone, etc.)
   main.py               # Production entry point
   main_debug.py         # Debug entry point (Pico Explorer display)
 ref_doc/                # Reference documentation
