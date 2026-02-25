@@ -5,6 +5,15 @@ import time
 CONFIG_FILE = "wifi_config.json"
 CONFIG_VERSION = 2
 
+SETTINGS_FILE = "settings.json"
+DEFAULT_SETTINGS = {
+    "backlight": 1.0,
+    "timezone": 8,
+    "weather_lat": 25.033,
+    "weather_lon": 121.565,
+    "ambient_leds": False,
+}
+
 
 class ConfigManager:
     """
@@ -178,3 +187,76 @@ class ConfigManager:
         if config:
             return config.get("version", 1)
         return 0
+
+    # --- General Settings ---
+
+    @staticmethod
+    def load_settings() -> dict:
+        """
+        Load general settings from settings.json.
+
+        Returns:
+            dict: Settings merged with defaults.
+        """
+        settings = dict(DEFAULT_SETTINGS)
+        try:
+            with open(SETTINGS_FILE, "r") as f:
+                saved = json.load(f)
+            settings.update(saved)
+        except (OSError, ValueError):
+            pass
+        return settings
+
+    @staticmethod
+    def save_settings(settings: dict) -> bool:
+        """
+        Save general settings to settings.json.
+
+        Args:
+            settings: Complete settings dict to save.
+
+        Returns:
+            bool: True if save succeeded.
+        """
+        try:
+            with open(SETTINGS_FILE, "w") as f:
+                json.dump(settings, f)
+                f.flush()
+            return True
+        except OSError as e:
+            print(f"ConfigManager: Error saving settings: {e}")
+            return False
+
+    @staticmethod
+    def get_setting(key: str, default=None):
+        """
+        Get a single setting value.
+
+        Args:
+            key: Setting key name.
+            default: Fallback if key not found
+                     (defaults to DEFAULT_SETTINGS value).
+
+        Returns:
+            The setting value.
+        """
+        if default is None:
+            default = DEFAULT_SETTINGS.get(key)
+        settings = ConfigManager.load_settings()
+        return settings.get(key, default)
+
+    @staticmethod
+    def set_setting(key: str, value) -> bool:
+        """
+        Update a single setting value.
+
+        Args:
+            key: Setting key name.
+            value: New value to set.
+
+        Returns:
+            bool: True if save succeeded.
+        """
+        settings = ConfigManager.load_settings()
+        settings[key] = value
+        return ConfigManager.save_settings(settings)

@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Subscreen Settings</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, sans-serif;
+            background: #1a1a2e; color: #eee;
+            display: flex; justify-content: center;
+            min-height: 100vh; margin: 0; padding: 1rem;
+        }
+        .container { width: 100%; max-width: 360px; }
+        h1 {
+            text-align: center; color: #00d4ff;
+            font-size: 1.4rem; margin-bottom: 1.5rem;
+        }
+        .section {
+            background: #16213e; border-radius: 12px;
+            padding: 1rem; margin-bottom: 1rem;
+        }
+        .section h2 {
+            font-size: 0.9rem; color: #888;
+            margin: 0 0 0.8rem 0; text-transform: uppercase;
+        }
+        .btn {
+            display: block; width: 100%;
+            padding: 1rem; margin-bottom: 0.6rem;
+            border: none; border-radius: 10px;
+            font-size: 1.1rem; font-weight: 600;
+            cursor: pointer; text-align: center;
+            transition: opacity 0.2s;
+        }
+        .btn:last-child { margin-bottom: 0; }
+        .btn:active { opacity: 0.7; }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .btn-backlight-on { background: #f0c040; color: #1a1a2e; }
+        .btn-backlight-off { background: #444; color: #ccc; }
+        .btn-led-on { background: #4caf50; color: white; }
+        .btn-led-off { background: #444; color: #ccc; }
+        .btn-save { background: #00d4ff; color: #1a1a2e; }
+        .btn-reboot { background: #e94560; color: white; }
+        .btn-reset {
+            background: #333; color: #e94560;
+            border: 2px solid #e94560;
+        }
+        .row {
+            display: flex; align-items: center;
+            gap: 0.8rem; margin-bottom: 0.8rem;
+        }
+        .row label { min-width: 70px; font-size: 0.95rem; }
+        .row input[type=range] { flex: 1; accent-color: #00d4ff; }
+        .row input[type=number], .row select {
+            flex: 1; background: #0d1b2a; color: #eee;
+            border: 1px solid #444; border-radius: 6px;
+            padding: 0.4rem; font-size: 0.9rem;
+        }
+        .val {
+            min-width: 36px; text-align: right;
+            font-size: 0.9rem; color: #00d4ff;
+        }
+        .hint {
+            font-size: 0.75rem; color: #666;
+            margin: -0.2rem 0 0.6rem 0;
+        }
+        .status {
+            text-align: center; color: #888;
+            font-size: 0.8rem; padding: 0.5rem 0;
+        }
+        .confirm-overlay {
+            display: none; position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.7);
+            justify-content: center; align-items: center;
+            z-index: 100;
+        }
+        .confirm-overlay.show { display: flex; }
+        .confirm-box {
+            background: #16213e; border-radius: 12px;
+            padding: 1.5rem; width: 90%; max-width: 300px;
+            text-align: center;
+        }
+        .confirm-box p { margin: 0 0 1rem 0; font-size: 1.1rem; }
+        .confirm-btns { display: flex; gap: 0.5rem; }
+        .confirm-btns .btn { flex: 1; margin: 0; padding: 0.8rem; }
+        .btn-cancel { background: #444; color: #ccc; }
+        .btn-confirm { background: #e94560; color: white; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Subscreen Settings</h1>
+
+        <div class="section">
+            <h2>Display</h2>
+            <div class="row">
+                <label>Backlight</label>
+                <input type="range" id="blSlider" min="0" max="100"
+                       value="100" oninput="updateBl(this.value)">
+                <span class="val" id="blVal">100%</span>
+            </div>
+            <button class="btn btn-backlight-on" id="blBtn"
+                    onclick="toggleBacklight()">
+                Backlight ON
+            </button>
+            <button class="btn btn-led-off" id="ledBtn"
+                    onclick="toggleAmbientLed()">
+                Ambient LED OFF
+            </button>
+        </div>
+
+        <div class="section">
+            <h2>Location</h2>
+            <div class="row">
+                <label>Latitude</label>
+                <input type="number" id="latInput" step="any"
+                       min="-90" max="90"
+                       placeholder="e.g. 25.033">
+            </div>
+            <div class="row">
+                <label>Longitude</label>
+                <input type="number" id="lonInput" step="any"
+                       min="-180" max="180"
+                       placeholder="e.g. 121.565">
+            </div>
+            <p class="hint">
+                Applied when you return to the Weather page.
+            </p>
+            <button class="btn btn-save" onclick="saveLocation()">
+                Save Location
+            </button>
+        </div>
+
+        <div class="section">
+            <h2>System</h2>
+            <div class="row">
+                <label>Timezone</label>
+                <select id="tzSelect" onchange="saveTz(this.value)">
+                </select>
+            </div>
+            <button class="btn btn-reboot"
+                    onclick="confirmAction('reboot')">
+                Reboot Device
+            </button>
+            <button class="btn btn-reset"
+                    onclick="confirmAction('reset')">
+                Reset WiFi
+            </button>
+        </div>
+
+        <div class="status" id="status"></div>
+    </div>
+
+    <div class="confirm-overlay" id="confirmOverlay">
+        <div class="confirm-box">
+            <p id="confirmMsg">Are you sure?</p>
+            <div class="confirm-btns">
+                <button class="btn btn-cancel"
+                        onclick="hideConfirm()">Cancel</button>
+                <button class="btn btn-confirm"
+                        id="confirmBtn">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    var blOn = true;
+    var lastBl = 100;
+    var ledOn = false;
+
+    function api(path, cb) {
+        var x = new XMLHttpRequest();
+        x.open('POST', path, true);
+        x.setRequestHeader('Content-Type',
+            'application/x-www-form-urlencoded');
+        x.onload = function() {
+            if (cb) cb(JSON.parse(x.responseText));
+        };
+        x.onerror = function() { showStatus('Request failed'); };
+        return x;
+    }
+
+    function buildTzSelect() {
+        var sel = document.getElementById('tzSelect');
+        for (var i = -12; i <= 14; i++) {
+            var opt = document.createElement('option');
+            opt.value = i;
+            opt.textContent = 'UTC' + (i >= 0 ? '+' : '') + i;
+            sel.appendChild(opt);
+        }
+    }
+
+    function loadSettings() {
+        var x = new XMLHttpRequest();
+        x.open('GET', '/api/settings', true);
+        x.onload = function() {
+            var s = JSON.parse(x.responseText);
+            var pct = Math.round((s.backlight || 0) * 100);
+            document.getElementById('blSlider').value = pct;
+            document.getElementById('blVal').textContent = pct + '%';
+            blOn = s.backlight > 0;
+            lastBl = blOn ? pct : 100;
+            updateBlBtn();
+            ledOn = !!(s.ambient_leds);
+            updateLedBtn();
+            if (s.timezone !== undefined)
+                document.getElementById('tzSelect').value =
+                    s.timezone;
+            if (s.weather_lat !== undefined)
+                document.getElementById('latInput').value =
+                    s.weather_lat;
+            if (s.weather_lon !== undefined)
+                document.getElementById('lonInput').value =
+                    s.weather_lon;
+        };
+        x.send();
+    }
+
+    function updateBl(pct) {
+        document.getElementById('blVal').textContent = pct + '%';
+        var val = pct / 100;
+        blOn = val > 0;
+        if (blOn) lastBl = pct;
+        updateBlBtn();
+        var x = api('/api/backlight');
+        x.send('value=' + val.toFixed(2));
+    }
+
+    function toggleBacklight() {
+        blOn = !blOn;
+        var pct = blOn ? lastBl : 0;
+        document.getElementById('blSlider').value = pct;
+        document.getElementById('blVal').textContent = pct + '%';
+        updateBlBtn();
+        var x = api('/api/backlight');
+        x.send('value=' + (pct / 100).toFixed(2));
+    }
+
+    function updateBlBtn() {
+        var btn = document.getElementById('blBtn');
+        if (blOn) {
+            btn.textContent = 'Backlight ON';
+            btn.className = 'btn btn-backlight-on';
+        } else {
+            btn.textContent = 'Backlight OFF';
+            btn.className = 'btn btn-backlight-off';
+        }
+    }
+
+    function toggleAmbientLed() {
+        ledOn = !ledOn;
+        updateLedBtn();
+        var x = api('/api/settings', function(r) {
+            if (!r.ok) { ledOn = !ledOn; updateLedBtn(); }
+        });
+        x.send('ambient_leds=' + (ledOn ? 1 : 0));
+    }
+
+    function updateLedBtn() {
+        var btn = document.getElementById('ledBtn');
+        if (ledOn) {
+            btn.textContent = 'Ambient LED ON';
+            btn.className = 'btn btn-led-on';
+        } else {
+            btn.textContent = 'Ambient LED OFF';
+            btn.className = 'btn btn-led-off';
+        }
+    }
+
+    function saveTz(val) {
+        var x = api('/api/settings', function(r) {
+            if (r.ok) showStatus('Timezone saved');
+        });
+        x.send('timezone=' + val);
+    }
+
+    function saveLocation() {
+        var lat = document.getElementById('latInput').value;
+        var lon = document.getElementById('lonInput').value;
+        if (!lat || !lon) { showStatus('Enter lat/lon'); return; }
+        var x = api('/api/settings', function(r) {
+            showStatus(r.ok ? 'Location saved' : 'Failed');
+        });
+        x.send('weather_lat=' + parseFloat(lat).toFixed(6) +
+               '&weather_lon=' + parseFloat(lon).toFixed(6));
+    }
+
+    function confirmAction(action) {
+        var ov = document.getElementById('confirmOverlay');
+        var msg = document.getElementById('confirmMsg');
+        var btn = document.getElementById('confirmBtn');
+        if (action === 'reboot') {
+            msg.textContent = 'Reboot the device?';
+            btn.onclick = function() { doReboot(); };
+        } else {
+            msg.textContent =
+                'Reset WiFi settings? Device will enter AP mode.';
+            btn.onclick = function() { doResetWifi(); };
+        }
+        ov.className = 'confirm-overlay show';
+    }
+
+    function hideConfirm() {
+        document.getElementById('confirmOverlay')
+            .className = 'confirm-overlay';
+    }
+
+    function doReboot() {
+        hideConfirm();
+        showStatus('Rebooting...');
+        var x = api('/api/reboot');
+        x.send('');
+    }
+
+    function doResetWifi() {
+        hideConfirm();
+        showStatus('Resetting WiFi...');
+        var x = api('/api/reset-wifi');
+        x.send('');
+    }
+
+    function showStatus(msg) {
+        document.getElementById('status').textContent = msg;
+    }
+
+    buildTzSelect();
+    loadSettings();
+    </script>
+</body>
+</html>

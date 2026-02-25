@@ -4,6 +4,7 @@ import math
 import time
 import ntptime
 import uasyncio as asyncio
+from config_manager import ConfigManager
 from ui.page import Page
 from ui.widget import Label
 from ui.theme import (
@@ -153,6 +154,9 @@ class ClockPage(Page):
             pass
 
     def on_enter(self):
+        self._tz_offset = ConfigManager.get_setting(
+            "timezone", self._tz_offset
+        )
         asyncio.create_task(self._sync_ntp())
 
     async def _sync_ntp(self):

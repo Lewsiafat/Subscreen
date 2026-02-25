@@ -3,6 +3,7 @@
 import time
 import json
 import uasyncio as asyncio
+from config_manager import ConfigManager
 from ui.page import Page
 from ui.widget import Label
 from ui.theme import (
@@ -178,6 +179,16 @@ class WeatherPage(Page):
         self.add(self._status_label)
 
     def on_enter(self):
+        new_lat = ConfigManager.get_setting(
+            "weather_lat", self._lat
+        )
+        new_lon = ConfigManager.get_setting(
+            "weather_lon", self._lon
+        )
+        if new_lat != self._lat or new_lon != self._lon:
+            self._lat = new_lat
+            self._lon = new_lon
+            self._last_fetch = 0  # 強制重新抓取
         if self._data:
             self._update_display()
         asyncio.create_task(self._fetch_weather())
