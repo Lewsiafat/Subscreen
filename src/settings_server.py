@@ -46,6 +46,13 @@ class SettingsServer:
             "/api/reset-wifi", self._handle_reset_wifi,
             method="POST"
         )
+        self._web.add_route(
+            "/api/pages", self._handle_get_pages
+        )
+        self._web.add_route(
+            "/api/pages", self._handle_set_pages,
+            method="POST"
+        )
 
     def _read_template(self):
         """讀取設定頁面 HTML。"""
@@ -129,6 +136,39 @@ class SettingsServer:
         return self._json_response(
             {"backlight": value}
         )
+
+    _AVAILABLE_PAGES = ["clock", "weather", "calendar", "market"]
+
+    async def _handle_get_pages(self, request):
+        """GET /api/pages — 回傳可用頁面與目前啟用清單。"""
+        enabled = ConfigManager.get_setting(
+            "pages", ["clock", "weather", "calendar"]
+        )
+        return self._json_response({
+            "available": self._AVAILABLE_PAGES,
+            "enabled": enabled,
+        })
+
+    async def _handle_set_pages(self, request):
+        """POST /api/pages — 驗證並儲存頁面順序。"""
+        params = request.get("params", {})
+        pages_str = params.get("pages", "")
+        if not pages_str:
+            return self._json_response(
+                {"error": "No pages parameter"}, 400
+            )
+        available = set(self._AVAILABLE_PAGES)
+        pages = [
+            p.strip() for p in pages_str.split(",")
+            if p.strip() in available
+        ]
+        if not pages:
+            return self._json_response(
+                {"error": "Invalid pages"}, 400
+            )
+        ConfigManager.set_setting("pages", pages)
+        self._log.info(f"Pages updated: {pages}")
+        return self._json_response({"ok": True, "pages": pages})
 
     async def _handle_reboot(self, request):
         """POST /api/reboot — 重啟裝置。"""

@@ -12,6 +12,7 @@ DEFAULT_SETTINGS = {
     "weather_lat": 25.033,
     "weather_lon": 121.565,
     "ambient_leds": False,
+    "pages": ["clock", "weather", "calendar"],
 }
 
 

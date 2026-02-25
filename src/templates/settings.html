@@ -86,6 +86,25 @@
         .confirm-btns .btn { flex: 1; margin: 0; padding: 0.8rem; }
         .btn-cancel { background: #444; color: #ccc; }
         .btn-confirm { background: #e94560; color: white; }
+        .page-row {
+            display: flex; align-items: center;
+            gap: 0.6rem; padding: 0.5rem 0;
+            border-bottom: 1px solid #0d1b2a;
+        }
+        .page-row:last-child { border-bottom: none; }
+        .page-row label { flex: 1; font-size: 0.95rem; }
+        .page-row input[type=checkbox] {
+            width: 18px; height: 18px;
+            accent-color: #00d4ff; cursor: pointer;
+        }
+        .btn-sm {
+            padding: 0.3rem 0.55rem;
+            border: none; border-radius: 6px;
+            background: #2a3a5a; color: #ccc;
+            font-size: 1rem; cursor: pointer;
+        }
+        .btn-sm:active { opacity: 0.7; }
+        .btn-sm:disabled { opacity: 0.3; cursor: not-allowed; }
     </style>
 </head>
 <body>
@@ -129,6 +148,18 @@
             </p>
             <button class="btn btn-save" onclick="saveLocation()">
                 Save Location
+            </button>
+        </div>
+
+        <div class="section">
+            <h2>Pages</h2>
+            <div id="pagesList"></div>
+            <p class="hint">
+                Settings page is always last.
+                Changes apply after reboot.
+            </p>
+            <button class="btn btn-save" onclick="savePages()">
+                Save Pages
             </button>
         </div>
 
@@ -324,8 +355,117 @@
         document.getElementById('status').textContent = msg;
     }
 
+    var allPages = [];
+    var PAGE_NAMES = {
+        clock: 'Clock', weather: 'Weather',
+        calendar: 'Calendar', market: 'Market'
+    };
+
+    function loadPages() {
+        var x = new XMLHttpRequest();
+        x.open('GET', '/api/pages', true);
+        x.onload = function() {
+            var d = JSON.parse(x.responseText);
+            buildPagesList(d.available, d.enabled);
+        };
+        x.onerror = function() {
+            showStatus('Failed to load pages');
+        };
+        x.send();
+    }
+
+    function buildPagesList(available, enabled) {
+        allPages = [];
+        for (var i = 0; i < enabled.length; i++) {
+            if (available.indexOf(enabled[i]) >= 0) {
+                allPages.push({ id: enabled[i], on: true });
+            }
+        }
+        for (var i = 0; i < available.length; i++) {
+            if (enabled.indexOf(available[i]) < 0) {
+                allPages.push({ id: available[i], on: false });
+            }
+        }
+        renderPagesList();
+    }
+
+    function renderPagesList() {
+        var container = document.getElementById('pagesList');
+        container.innerHTML = '';
+        for (var i = 0; i < allPages.length; i++) {
+            (function(idx) {
+                var p = allPages[idx];
+                var row = document.createElement('div');
+                row.className = 'page-row';
+
+                var chk = document.createElement('input');
+                chk.type = 'checkbox';
+                chk.checked = p.on;
+                chk.onchange = (function(i) {
+                    return function() { allPages[i].on = this.checked; };
+                })(idx);
+
+                var lbl = document.createElement('label');
+                lbl.textContent = PAGE_NAMES[p.id] || p.id;
+
+                var btnUp = document.createElement('button');
+                btnUp.className = 'btn-sm';
+                btnUp.textContent = '\u25b2';
+                btnUp.disabled = idx === 0;
+                btnUp.onclick = (function(i) {
+                    return function() { movePage(i, -1); };
+                })(idx);
+
+                var btnDn = document.createElement('button');
+                btnDn.className = 'btn-sm';
+                btnDn.textContent = '\u25bc';
+                btnDn.disabled = idx === allPages.length - 1;
+                btnDn.onclick = (function(i) {
+                    return function() { movePage(i, 1); };
+                })(idx);
+
+                row.appendChild(chk);
+                row.appendChild(lbl);
+                row.appendChild(btnUp);
+                row.appendChild(btnDn);
+                container.appendChild(row);
+            })(i);
+        }
+    }
+
+    function movePage(idx, dir) {
+        var newIdx = idx + dir;
+        if (newIdx < 0 || newIdx >= allPages.length) return;
+        var tmp = allPages[idx];
+        allPages[idx] = allPages[newIdx];
+        allPages[newIdx] = tmp;
+        renderPagesList();
+    }
+
+    function savePages() {
+        var enabled = [];
+        for (var i = 0; i < allPages.length; i++) {
+            if (allPages[i].on) enabled.push(allPages[i].id);
+        }
+        if (enabled.length === 0) {
+            showStatus('At least one page required');
+            return;
+        }
+        var x = new XMLHttpRequest();
+        x.open('POST', '/api/pages', true);
+        x.setRequestHeader('Content-Type',
+            'application/x-www-form-urlencoded');
+        x.onload = function() {
+            var r = JSON.parse(x.responseText);
+            showStatus(r.ok ? 'Pages saved! Reboot to apply.' : 'Failed');
+        };
+        x.onerror = function() { showStatus('Request failed'); };
+        x.send('pages=' + enabled.join(','));
+    }
+
     buildTzSelect();
     loadSettings();
+    loadPages();
     </script>
 </body>
 </html>
