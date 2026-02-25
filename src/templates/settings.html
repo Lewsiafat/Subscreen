@@ -323,10 +323,16 @@
         var btn = document.getElementById('confirmBtn');
         if (action === 'reboot') {
             msg.textContent = 'Reboot the device?';
+            btn.textContent = 'Reboot';
+            btn.onclick = function() { doReboot(); };
+        } else if (action === 'reboot-pages') {
+            msg.textContent = 'Pages saved! Reboot now to apply?';
+            btn.textContent = 'Reboot';
             btn.onclick = function() { doReboot(); };
         } else {
             msg.textContent =
                 'Reset WiFi settings? Device will enter AP mode.';
+            btn.textContent = 'Confirm';
             btn.onclick = function() { doResetWifi(); };
         }
         ov.className = 'confirm-overlay show';
@@ -457,7 +463,11 @@
             'application/x-www-form-urlencoded');
         x.onload = function() {
             var r = JSON.parse(x.responseText);
-            showStatus(r.ok ? 'Pages saved! Reboot to apply.' : 'Failed');
+            if (r.ok) {
+                confirmAction('reboot-pages');
+            } else {
+                showStatus('Failed to save pages');
+            }
         };
         x.onerror = function() { showStatus('Request failed'); };
         x.send('pages=' + enabled.join(','));
