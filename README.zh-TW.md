@@ -17,6 +17,7 @@
 - **行情頁面** — BTC/ETH 透過 Binance WebSocket 即時推送 + SPY/AAPL/TWII/2330 透過 Stooq CSV API 輪詢（預設停用）
 - **頁面管理** — 透過 Web 設定介面啟用/停用頁面並調整順序，重開機後生效
 - **設定頁 Overlay** — 從任何頁面往上滑即可開啟設定，往下滑收起。設定頁以全螢幕由下往上彈出的方式顯示
+- **城市搜尋** — 在設定的 Location 區塊搜尋城市名稱，透過 Open-Meteo Geocoding API 自動填入經緯度。城市名稱也會顯示在天氣頁面頂部
 - **NTP 時間同步** — WiFi 連線後自動同步，可設定時區
 - **WiFi 自動管理** — 連線失敗自動重試，超過上限後進入 AP 模式
 - **Captive Portal 設定** — AP 模式下透過手機瀏覽器設定 WiFi 密碼

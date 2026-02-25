@@ -17,6 +17,7 @@ A desktop sub-screen device based on [Pimoroni Presto](https://shop.pimoroni.com
 - **Market Page** — Real-time BTC/ETH via Binance WebSocket + SPY/AAPL/TWII/2330 via Stooq CSV API (disabled by default).
 - **Pages Management** — Enable/disable and reorder pages via the Web Settings UI. Changes apply after reboot.
 - **Settings Overlay** — Swipe up from any page to open Settings; swipe down to dismiss. Settings slides up from the bottom as a full-screen overlay.
+- **City Search** — Search city name in Settings to automatically fill latitude/longitude via Open-Meteo Geocoding API. City name is shown on the Weather page.
 - **NTP Time Sync** — Auto-sync after WiFi connection, configurable time zone.
 - **WiFi Auto Management** — Auto-retry on connection failure, enters AP mode after exceeding retry limits.
 - **Captive Portal Setup** — Configure WiFi password via mobile browser in AP mode.

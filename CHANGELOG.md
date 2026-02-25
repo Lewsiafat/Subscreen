@@ -4,6 +4,22 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.6.0] - 2026-02-25
+
+### Added
+- City name search in Settings Location section using Open-Meteo Geocoding API (browser-side, no API key required)
+- Weather page now displays the current location name at the top (small gray text, centered)
+- `on_resume()` hook in `Page` base class — called when the settings overlay is dismissed
+- `WeatherPage.on_resume()` — immediately re-reads location settings and refreshes when settings overlay closes
+
+### Changed
+- `saveLocation()` now also saves `weather_location` (city name) alongside lat/lon
+- Settings page loads and displays the previously saved city name in the City search field
+- Save Location success now shows a dialog with instructions instead of a small status text
+
+### Fixed
+- Weather page location and forecast did not update immediately after closing Settings overlay; required swiping away and back to apply
+
 ## [0.5.1] - 2026-02-25
 
 ### Changed
