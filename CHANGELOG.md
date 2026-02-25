@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.5.0] - 2026-02-25
+
+### Added
+- Pages Management: enable/disable and reorder pages via the Web UI Settings page
+- `GET /api/pages` and `POST /api/pages` endpoints in `settings_server.py`
+- Pages section in `settings.html` with checkboxes and ▲▼ reorder buttons
+- Reboot confirmation dialog appears automatically after saving page changes
+- `pages` setting in `settings.json` with default `["clock", "weather", "calendar"]`
+
+### Changed
+- Market page is now disabled by default (can be re-enabled via Pages Management)
+- `main.py` now dynamically loads enabled pages from settings at startup
+- Settings page is always fixed as the last page in the sequence
+
 ## [0.4.0] - 2026-02-23
 
 ### Added

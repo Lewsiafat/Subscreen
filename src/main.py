@@ -40,18 +40,25 @@ async def main():
             ambient = ConfigManager.get_setting(
                 "ambient_leds", False
             )
-            # 建立可滑動切換的頁面序列
-            clock = ClockPage(app, tz_offset=tz)
-            weather = WeatherPage(app, lat=lat, lon=lon)
-            calendar = CalendarPage(app)
-            market = MarketPage(app)
+            # 動態建立啟用的頁面序列
+            page_ids = ConfigManager.get_setting(
+                "pages", ["clock", "weather", "calendar"]
+            )
+            page_list = []
+            for pid in page_ids:
+                if pid == "clock":
+                    page_list.append(ClockPage(app, tz_offset=tz))
+                elif pid == "weather":
+                    page_list.append(WeatherPage(app, lat=lat, lon=lon))
+                elif pid == "calendar":
+                    page_list.append(CalendarPage(app))
+                elif pid == "market":
+                    page_list.append(MarketPage(app))
             settings_page = SettingsPage(app)
+            page_list.append(settings_page)
             app.presto.auto_ambient_leds(bool(ambient))
-            app.set_screen(clock)
-            app.set_pages([
-                clock, weather, calendar,
-                market, settings_page
-            ])
+            app.set_screen(page_list[0])
+            app.set_pages(page_list)
         asyncio.create_task(_wait_and_switch())
 
     def on_ap_mode(ssid):
