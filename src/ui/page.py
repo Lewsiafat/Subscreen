@@ -24,7 +24,7 @@ class Page:
         """邏輯更新。子類覆寫以處理資料抓取等。"""
         pass
 
-    def draw(self, display, vector, offset_x=0):
+    def draw(self, display, vector, offset_x=0, offset_y=0):
         """繪製頁面。
 
         預設行為：清除背景 + 繪製所有 widgets。
@@ -34,17 +34,22 @@ class Page:
             display: PicoGraphics 實例。
             vector: PicoVector 實例（可為 None）。
             offset_x: 水平偏移，用於滑動換頁效果。
+            offset_y: 垂直偏移，用於 Overlay 效果。
         """
-        self._draw_background(display)
-        self._draw_widgets(display, offset_x)
+        self._draw_background(display, offset_y)
+        self._draw_widgets(display, offset_x, offset_y)
 
-    def _draw_background(self, display):
+    def _draw_background(self, display, offset_y=0):
         display.set_pen(display.create_pen(*self.bg))
-        display.clear()
+        if offset_y > 0:
+            # Overlay 繪製模式：只畫底部區域，不清除上方主頁面
+            display.rectangle(0, offset_y, 240, 240 - offset_y)
+        else:
+            display.clear()
 
-    def _draw_widgets(self, display, offset_x=0):
+    def _draw_widgets(self, display, offset_x=0, offset_y=0):
         for widget in self.widgets:
-            widget.draw(display, offset_x)
+            widget.draw(display, offset_x, offset_y)
 
     def handle_touch(self, tx, ty):
         """分發觸控事件給 widgets。"""

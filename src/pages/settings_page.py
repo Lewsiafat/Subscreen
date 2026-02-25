@@ -64,13 +64,13 @@ class SettingsPage(Page):
             self._server.stop()
             self._server = None
 
-    def draw(self, display, vector, offset_x=0):
+    def draw(self, display, vector, offset_x=0, offset_y=0):
         """繪製頁面，包含 QR Code。"""
-        super().draw(display, vector, offset_x)
+        super().draw(display, vector, offset_x, offset_y)
         if self._qr_matrix:
-            self._draw_qr(display, offset_x)
+            self._draw_qr(display, offset_x, offset_y)
 
-    def _draw_qr(self, display, offset_x):
+    def _draw_qr(self, display, offset_x, offset_y=0):
         """繪製 QR Code 點陣圖。"""
         qr = self._qr_matrix
         qr_size = len(qr)
@@ -78,7 +78,7 @@ class SettingsPage(Page):
         pixel_size = min(140 // qr_size, 5)
         total_px = qr_size * pixel_size
         start_x = (240 - total_px) // 2 + offset_x
-        start_y = 50 + (150 - total_px) // 2
+        start_y = 50 + (150 - total_px) // 2 + offset_y
 
         # 白色背景
         white_pen = display.create_pen(255, 255, 255)

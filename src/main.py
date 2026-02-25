@@ -54,11 +54,12 @@ async def main():
                     page_list.append(CalendarPage(app))
                 elif pid == "market":
                     page_list.append(MarketPage(app))
-            settings_page = SettingsPage(app)
-            page_list.append(settings_page)
             app.presto.auto_ambient_leds(bool(ambient))
             app.set_screen(page_list[0])
             app.set_pages(page_list)
+            # 設定 Settings 為垂直彈出的 Overlay
+            settings_page = SettingsPage(app)
+            app.set_overlay(settings_page)
         asyncio.create_task(_wait_and_switch())
 
     def on_ap_mode(ssid):
