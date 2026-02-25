@@ -20,7 +20,7 @@ class Widget:
     def mark_dirty(self):
         self._dirty = True
 
-    def draw(self, display, offset_x=0):
+    def draw(self, display, offset_x=0, offset_y=0):
         """繪製元件。子類必須覆寫。"""
         pass
 
@@ -50,15 +50,15 @@ class Label(Widget):
             self.text = text
             self.mark_dirty()
 
-    def draw(self, display, offset_x=0):
+    def draw(self, display, offset_x=0, offset_y=0):
         if not self.visible:
             return
         display.set_pen(display.create_pen(*self.color))
         if self.wrap_width > 0:
-            display.text(self.text, self.x + offset_x, self.y,
+            display.text(self.text, self.x + offset_x, self.y + offset_y,
                          self.wrap_width, self.scale)
         else:
-            display.text(self.text, self.x + offset_x, self.y,
+            display.text(self.text, self.x + offset_x, self.y + offset_y,
                          240, self.scale)
 
 
@@ -90,12 +90,12 @@ class Button(Widget):
             return self._touch_btn.is_pressed()
         return self._pressed
 
-    def draw(self, display, offset_x=0):
+    def draw(self, display, offset_x=0, offset_y=0):
         if not self.visible:
             return
         bg = self.bg_pressed if self.is_pressed() else self.bg
         display.set_pen(display.create_pen(*bg))
-        display.rectangle(self.x + offset_x, self.y, self.w, self.h)
+        display.rectangle(self.x + offset_x, self.y + offset_y, self.w, self.h)
 
         if self.text:
             display.set_pen(display.create_pen(*self.text_color))
@@ -103,7 +103,7 @@ class Button(Widget):
             char_w = 8 * self.scale
             text_w = len(self.text) * char_w
             tx = self.x + offset_x + (self.w - text_w) // 2
-            ty = self.y + (self.h - 8 * self.scale) // 2
+            ty = self.y + offset_y + (self.h - 8 * self.scale) // 2
             display.text(self.text, tx, ty, self.w, self.scale)
 
     def handle_touch(self, tx, ty):
@@ -132,15 +132,15 @@ class Container(Widget):
         self.children.append(widget)
         return widget
 
-    def draw(self, display, offset_x=0):
+    def draw(self, display, offset_x=0, offset_y=0):
         if not self.visible:
             return
         if self.bg:
             display.set_pen(display.create_pen(*self.bg))
-            display.rectangle(self.x + offset_x, self.y,
+            display.rectangle(self.x + offset_x, self.y + offset_y,
                               self.w, self.h)
         for child in self.children:
-            child.draw(display, offset_x)
+            child.draw(display, offset_x, offset_y)
 
     def handle_touch(self, tx, ty):
         if not self.visible:

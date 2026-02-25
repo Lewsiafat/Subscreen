@@ -70,6 +70,17 @@ class App:
         self._swipe_direction = 0   # +1 往右（前一頁），-1 往左（下一頁）
         self._swipe_next_page = None
 
+        # Overlay (Settings) 狀態
+        self._overlay_page = None
+        self._overlay_visible = False
+        self._overlay_offset_y = 240.0   # 240=隱藏, 0=完全可見
+        self._overlay_animating = False
+        self._overlay_direction = 0      # +1=收起, -1=彈出
+
+        # Y 軸觸控追蹤
+        self._touch_start_y = -1
+        self._touch_last_y = -1
+
     def set_pages(self, pages):
         """設定可滑動切換的頁面序列。
 
@@ -135,6 +146,41 @@ class App:
             self._swipe_offset = 0.0
             self._swipe_next_page = None
 
+    def set_overlay(self, page):
+        """設定 overlay 頁面（如 SettingsPage）。"""
+        self._overlay_page = page
+
+    def _show_overlay(self):
+        """啟動彈出 overlay 動畫。"""
+        if self._overlay_animating or self._overlay_visible:
+            return
+        if not self._overlay_page:
+            return
+        self._overlay_page.on_enter()
+        self._overlay_animating = True
+        self._overlay_direction = -1   # 往上滑入
+
+    def _hide_overlay(self):
+        """啟動收起 overlay 動畫。"""
+        if self._overlay_animating or not self._overlay_visible:
+            return
+        self._overlay_animating = True
+        self._overlay_direction = 1    # 往下滑出
+
+    def _update_overlay_animation(self):
+        """每幀推進 overlay 動畫。"""
+        self._overlay_offset_y += self._overlay_direction * _SWIPE_ANIM_SPEED
+        if self._overlay_direction < 0 and self._overlay_offset_y <= 0:
+            self._overlay_offset_y = 0.0
+            self._overlay_visible = True
+            self._overlay_animating = False
+        elif self._overlay_direction > 0 and self._overlay_offset_y >= self.height:
+            self._overlay_offset_y = float(self.height)
+            self._overlay_visible = False
+            self._overlay_animating = False
+            if self._overlay_page:
+                self._overlay_page.on_exit()
+
     async def run(self, initial_page_class):
         """啟動主迴圈。
 
@@ -157,44 +203,90 @@ class App:
         self.touch.poll()
         touching = self.touch.state
 
+        # 水平滑動動畫
         if self._swiping:
             was_swiping = True
             self._update_swipe_animation()
         else:
             was_swiping = False
 
+        # Overlay 動畫
+        if self._overlay_animating:
+            self._update_overlay_animation()
+
         if self._swiping:
-            # 動畫進行中，持續追蹤觸控位置（不消費手勢）
+            # 動畫進行中，持續追蹤觸控位置
             if touching:
                 self._touch_last_x = self.touch.x
+                self._touch_last_y = self.touch.y
         else:
             if touching:
                 if not self._touch_was_down or was_swiping:
-                    # 觸控開始（或動畫剛結束時正在觸控）
+                    # 觸控開始
                     self._touch_start_x = self.touch.x
+                    self._touch_start_y = self.touch.y
                 # 持續追蹤最新位置
                 self._touch_last_x = self.touch.x
+                self._touch_last_y = self.touch.y
             elif self._touch_was_down and not was_swiping:
-                # 觸控結束 → 用追蹤的最後位置計算距離
+                # 觸控結束
                 dx = self._touch_last_x - self._touch_start_x
-                if abs(dx) >= _SWIPE_THRESHOLD:
-                    # 滑動 → 切換頁面
-                    direction = 1 if dx > 0 else -1
-                    self._navigate(direction)
+                dy = self._touch_last_y - self._touch_start_y
+
+                if abs(dy) > abs(dx):
+                    # 垂直滑動優先
+                    if dy < -_SWIPE_THRESHOLD:
+                        self._show_overlay()
+                    elif dy > _SWIPE_THRESHOLD:
+                        self._hide_overlay()
+                    else:
+                        # tap：優先給 overlay，否則給主頁面
+                        if self._overlay_visible and self._overlay_page:
+                            self._overlay_page.handle_touch(
+                                self._touch_last_x, self._touch_last_y
+                            )
+                        else:
+                            self._current_page.handle_touch(
+                                self._touch_last_x, self._touch_last_y
+                            )
                 else:
-                    # 點擊 → 傳給頁面處理
-                    self._current_page.handle_touch(
-                        self._touch_last_x, self.touch.y
-                    )
+                    # 水平滑動或 tap
+                    if abs(dx) >= _SWIPE_THRESHOLD and not self._overlay_visible:
+                        # 滑動 → 切換頁面
+                        direction = 1 if dx > 0 else -1
+                        self._navigate(direction)
+                    else:
+                        # tap：優先給 overlay，否則給主頁面
+                        if self._overlay_visible and self._overlay_page:
+                            self._overlay_page.handle_touch(
+                                self._touch_last_x, self._touch_last_y
+                            )
+                        else:
+                            self._current_page.handle_touch(
+                                self._touch_last_x, self._touch_last_y
+                            )
                 self._touch_start_x = -1
+                self._touch_start_y = -1
         self._touch_was_down = touching
 
         # 邏輯更新
         self._current_page.update()
+        if self._overlay_visible and self._overlay_page:
+            self._overlay_page.update()
 
         # 繪製
         if self._swiping:
             self._draw_swipe_transition()
+        elif self._overlay_animating:
+            # 動畫中：先畫主頁面，再疊 overlay
+            self._current_page.draw(self.display, self.vector, offset_x=0)
+            self._overlay_page.draw(
+                self.display, self.vector,
+                offset_y=int(self._overlay_offset_y)
+            )
+        elif self._overlay_visible:
+            # 只畫 overlay (offset_y=0)
+            self._overlay_page.draw(self.display, self.vector, offset_y=0)
         else:
             self._current_page.draw(
                 self.display, self.vector, offset_x=0
