@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.5.1] - 2026-02-25
+
+### Changed
+- Settings page no longer appears in the horizontal swipe sequence; it now slides up from the bottom as a vertical overlay
+- Swipe up on any page to open Settings; swipe down within Settings to dismiss
+- `ui/app.py`: Added overlay system with `set_overlay()`, `_show_overlay()`, `_hide_overlay()`, and `_update_overlay_animation()`
+- `ui/page.py` and `ui/widget.py`: All `draw()` methods now accept `offset_y` for vertical animation support
+
 ## [0.5.0] - 2026-02-25
 
 ### Added

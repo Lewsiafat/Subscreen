@@ -16,6 +16,7 @@ A desktop sub-screen device based on [Pimoroni Presto](https://shop.pimoroni.com
 - **Calendar Page** — Monthly calendar grid, today highlighted, tap to switch months.
 - **Market Page** — Real-time BTC/ETH via Binance WebSocket + SPY/AAPL/TWII/2330 via Stooq CSV API (disabled by default).
 - **Pages Management** — Enable/disable and reorder pages via the Web Settings UI. Changes apply after reboot.
+- **Settings Overlay** — Swipe up from any page to open Settings; swipe down to dismiss. Settings slides up from the bottom as a full-screen overlay.
 - **NTP Time Sync** — Auto-sync after WiFi connection, configurable time zone.
 - **WiFi Auto Management** — Auto-retry on connection failure, enters AP mode after exceeding retry limits.
 - **Captive Portal Setup** — Configure WiFi password via mobile browser in AP mode.
@@ -97,6 +98,9 @@ Page Flow:
 SplashPage → ClockPage (WiFi connection success)
            → ApModePage (WiFi connection failed, enter AP mode)
 
-ClockPage ←swipe→ WeatherPage ←swipe→ CalendarPage ←swipe→ ... ←swipe→ SettingsPage
+ClockPage ←swipe→ WeatherPage ←swipe→ CalendarPage ←swipe→ ...
 (page order and visibility configurable via Web Settings UI)
+
+swipe up ↑ on any page → SettingsPage (overlay, slides up from bottom)
+swipe down ↓ within Settings → dismiss overlay
 ```

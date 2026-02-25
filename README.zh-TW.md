@@ -16,6 +16,7 @@
 - **日曆頁面** — 月曆格式顯示，今日高亮，點擊左右切換月份
 - **行情頁面** — BTC/ETH 透過 Binance WebSocket 即時推送 + SPY/AAPL/TWII/2330 透過 Stooq CSV API 輪詢（預設停用）
 - **頁面管理** — 透過 Web 設定介面啟用/停用頁面並調整順序，重開機後生效
+- **設定頁 Overlay** — 從任何頁面往上滑即可開啟設定，往下滑收起。設定頁以全螢幕由下往上彈出的方式顯示
 - **NTP 時間同步** — WiFi 連線後自動同步，可設定時區
 - **WiFi 自動管理** — 連線失敗自動重試，超過上限後進入 AP 模式
 - **Captive Portal 設定** — AP 模式下透過手機瀏覽器設定 WiFi 密碼
@@ -97,6 +98,9 @@ IDLE → CONNECTING → CONNECTED（每 2 秒健康檢查）
 SplashPage → ClockPage（WiFi 連線成功）
            → ApModePage（WiFi 連線失敗，進入 AP 模式）
 
-ClockPage ←滑動→ WeatherPage ←滑動→ CalendarPage ←滑動→ ... ←滑動→ SettingsPage
+ClockPage ←滑動→ WeatherPage ←滑動→ CalendarPage ←滑動→ ...
 （頁面順序與顯示可透過 Web 設定介面調整）
+
+往上滑 ↑（任何頁面）→ 設定頁（Overlay，從下方彈出）
+往下滑 ↓（設定頁中）→ 收起 Overlay
 ```
