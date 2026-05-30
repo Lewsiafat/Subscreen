@@ -31,6 +31,7 @@ MicroPython project — no traditional build system. Code deploys directly to ha
 - `snake_case` functions/variables, `PascalCase` classes, `ALL_CAPS` constants
 - Type annotations encouraged for public APIs
 - Docstrings: triple double quotes with `Args:`, `Returns:`, `Raises:`
+- Codebase docstrings/comments are bilingual (Chinese + English) — match the surrounding file's language when editing.
 
 ## Architecture
 
@@ -45,7 +46,7 @@ IDLE → CONNECTING → CONNECTED ↔ (health check every 2s)
 
 Key modules:
 - `wifi_manager.py` — Core async state machine with event system (`on`/`off` callbacks)
-- `config_manager.py` — Versioned JSON persistence (`wifi_config.json`, auto-migrates v1→v2)
+- `config_manager.py` — Versioned JSON persistence. Two stores: `wifi_config.json` (SSID/password, auto-migrates v1→v2) and `settings.json` (app settings — `timezone`, `weather_lat/lon`, `pages`, `ambient_leds`). Use `ConfigManager.get_setting(key, default)` / `set_setting(key, value)` for app settings.
 - `provisioning.py` — Web-based WiFi setup with captive portal (Apple/Android detection)
 - `web_server.py` / `dns_server.py` — Async HTTP + DNS servers for provisioning
 - `logger.py` — Lightweight logging with global/per-module levels and hook system
@@ -83,9 +84,13 @@ await presto.async_connect()        # Async WiFi
 ### Design Principles
 
 - **Async-First:** All network operations use `uasyncio`, non-blocking
-- **Pure MicroPython:** No external dependencies, only built-in + Pimoroni frozen modules
+- **Pure MicroPython:** No pip dependencies — only built-in + Pimoroni frozen modules. Exception: `src/uQR.py` is a vendored pure-Python QR library (used by SettingsPage).
 - **Hardware-Aware:** RP2350 memory constraints; 240x240 standard, 480x480 requires `palette=True`
 - **Resilience Over Features:** Every network state handled gracefully with auto-recovery
+
+### Page Routing
+
+`main.py` is event-driven: `wm.on("connected")` builds the enabled page sequence from the `pages` setting (clock/weather/calendar/market) and mounts SettingsPage as a vertical overlay; `wm.on("ap_mode_started")` swaps to `ApModePage`. SplashPage is the initial screen until WiFi resolves.
 
 ### Event System
 
@@ -125,11 +130,16 @@ src/                    # All source code (deployed to Pico root)
     market_page.py      # Market — Binance WebSocket crypto + Stooq stock quotes
     settings_page.py    # Settings — QR Code + web UI entry point
     demo_page.py        # Hello World demo page
-  settings_server.py    # Web settings API (/api/settings, /api/pages, /api/backlight)
+  settings_server.py    # Web settings API (/api/settings, /api/pages, /api/backlight,
+                        #   /api/reboot, /api/reset-wifi)
   templates/            # HTML for provisioning UI
     settings.html       # Web settings UI (pages management, location, timezone, etc.)
   main.py               # Production entry point
   main_debug.py         # Debug entry point (Pico Explorer display)
+  config.py             # WiFiConfig — connection/AP tuning defaults (retries, timeouts)
+  restore.py            # Utility — deletes wifi_config.json and resets device
+  uQR.py                # Vendored pure-Python QR code generator
+  debug_display.py      # Debug dashboard rendering
 ref_doc/                # Reference documentation
   AI_REFERENCE_GUIDE.md # Presto device coding patterns
   MODULE_SPEC.md        # Frozen module API specs (presto, touch, lsm6ds3, etc.)
