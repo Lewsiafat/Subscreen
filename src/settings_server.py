@@ -137,7 +137,9 @@ class SettingsServer:
             {"backlight": value}
         )
 
-    _AVAILABLE_PAGES = ["clock", "weather", "calendar", "market"]
+    _AVAILABLE_PAGES = [
+        "clock", "weather", "calendar", "market", "pomodoro"
+    ]
 
     async def _handle_get_pages(self, request):
         """GET /api/pages — 回傳可用頁面與目前啟用清單。"""

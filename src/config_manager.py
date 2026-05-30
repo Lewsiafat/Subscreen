@@ -13,6 +13,9 @@ DEFAULT_SETTINGS = {
     "weather_lon": 121.565,
     "ambient_leds": False,
     "pages": ["clock", "weather", "calendar"],
+    "pomodoro_work": 25,
+    "pomodoro_break": 5,
+    "pomodoro_total": 120,
 }
 
 
