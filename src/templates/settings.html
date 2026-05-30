@@ -207,6 +207,34 @@
         </div>
 
         <div class="section">
+            <h2>Pomodoro</h2>
+            <div class="row">
+                <label>Work</label>
+                <input type="number" id="pomoWork"
+                       min="1" max="90" step="1" placeholder="25">
+                <span class="val">min</span>
+            </div>
+            <div class="row">
+                <label>Break</label>
+                <input type="number" id="pomoBreak"
+                       min="0" max="30" step="1" placeholder="5">
+                <span class="val">min</span>
+            </div>
+            <div class="row">
+                <label>Total</label>
+                <input type="number" id="pomoTotal"
+                       min="5" max="480" step="5" placeholder="120">
+                <span class="val">min</span>
+            </div>
+            <p class="hint">
+                Applied when you open the Pomodoro page.
+            </p>
+            <button class="btn btn-save" onclick="savePomodoro()">
+                Save Pomodoro
+            </button>
+        </div>
+
+        <div class="section">
             <h2>Pages</h2>
             <div id="pagesList"></div>
             <p class="hint">
@@ -304,8 +332,34 @@
             if (s.weather_location)
                 document.getElementById('cityInput').value =
                     s.weather_location;
+            if (s.pomodoro_work !== undefined)
+                document.getElementById('pomoWork').value =
+                    s.pomodoro_work;
+            if (s.pomodoro_break !== undefined)
+                document.getElementById('pomoBreak').value =
+                    s.pomodoro_break;
+            if (s.pomodoro_total !== undefined)
+                document.getElementById('pomoTotal').value =
+                    s.pomodoro_total;
         };
         x.send();
+    }
+
+    function savePomodoro() {
+        var work = document.getElementById('pomoWork').value;
+        var brk = document.getElementById('pomoBreak').value;
+        var total = document.getElementById('pomoTotal').value;
+        if (work === '' || brk === '' || total === '') {
+            showStatus('Enter work/break/total');
+            return;
+        }
+        var x = api('/api/settings', function(r) {
+            if (r.ok) showStatus('Pomodoro saved');
+            else showStatus('Failed to save pomodoro');
+        });
+        x.send('pomodoro_work=' + parseInt(work) +
+               '&pomodoro_break=' + parseInt(brk) +
+               '&pomodoro_total=' + parseInt(total));
     }
 
     function updateBl(pct) {
@@ -506,7 +560,8 @@
     var allPages = [];
     var PAGE_NAMES = {
         clock: 'Clock', weather: 'Weather',
-        calendar: 'Calendar', market: 'Market'
+        calendar: 'Calendar', market: 'Market',
+        pomodoro: 'Pomodoro'
     };
 
     function loadPages() {

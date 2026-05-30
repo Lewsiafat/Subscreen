@@ -7,6 +7,7 @@ from pages.clock_page import ClockPage
 from pages.weather_page import WeatherPage
 from pages.calendar_page import CalendarPage
 from pages.market_page import MarketPage
+from pages.pomodoro_page import PomodoroPage
 from pages.ap_mode_page import ApModePage
 from pages.settings_page import SettingsPage
 
@@ -54,6 +55,8 @@ async def main():
                     page_list.append(CalendarPage(app))
                 elif pid == "market":
                     page_list.append(MarketPage(app))
+                elif pid == "pomodoro":
+                    page_list.append(PomodoroPage(app))
             app.presto.auto_ambient_leds(bool(ambient))
             app.set_screen(page_list[0])
             app.set_pages(page_list)
