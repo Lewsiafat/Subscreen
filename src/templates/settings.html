@@ -210,8 +210,12 @@
             <h2>Pomodoro</h2>
             <div class="row">
                 <label>Work</label>
-                <input type="number" id="pomoWork"
-                       min="1" max="90" step="1" placeholder="25">
+                <select id="pomoWork">
+                    <option value="10">10</option>
+                    <option value="15">15</option>
+                    <option value="30">30</option>
+                    <option value="45">45</option>
+                </select>
                 <span class="val">min</span>
             </div>
             <div class="row">
@@ -341,9 +345,11 @@
             if (s.weather_location)
                 document.getElementById('cityInput').value =
                     s.weather_location;
-            if (s.pomodoro_work !== undefined)
-                document.getElementById('pomoWork').value =
-                    s.pomodoro_work;
+            if (s.pomodoro_work !== undefined) {
+                var wsel = document.getElementById('pomoWork');
+                wsel.value = String(s.pomodoro_work);
+                if (wsel.selectedIndex < 0) wsel.value = '30';
+            }
             if (s.pomodoro_break !== undefined)
                 document.getElementById('pomoBreak').value =
                     s.pomodoro_break;

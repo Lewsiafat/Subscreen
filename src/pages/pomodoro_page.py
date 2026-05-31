@@ -28,8 +28,9 @@ TOMATO = (255, 99, 71)
 # 蜂鳴器接腳 / Buzzer GPIO pin
 _BUZZER_PIN = 43
 
-# 設定範圍 (min, max, step) / Setting bounds
-_WORK_BOUNDS = (1, 90, 5)
+# 工作時長預設清單（分）/ Work duration presets — -/+ steps through these
+_WORK_PRESETS = (10, 15, 30, 45)
+# 設定範圍 (min, max, step) / Setting bounds（break/total 仍用範圍）
 _BREAK_BOUNDS = (0, 30, 1)
 _TOTAL_BOUNDS = (5, 480, 15)
 
@@ -52,9 +53,10 @@ class PomodoroPage(Page):
     def __init__(self, app):
         super().__init__(app)
         # 從設定載入三個可調值 / Load the three editable values
-        self._work_min = ConfigManager.get_setting("pomodoro_work", 25)
+        self._work_min = ConfigManager.get_setting("pomodoro_work", 30)
         self._break_min = ConfigManager.get_setting("pomodoro_break", 5)
         self._total_min = ConfigManager.get_setting("pomodoro_total", 120)
+        self._snap_work()  # 對齊到預設清單
         # 提示強度 off/normal/loud / Alert intensity
         self._alert = ConfigManager.get_setting("pomodoro_alert", "loud")
         # 提示世代序號：切換頁面/重置時遞增，讓進行中的閃爍/警報協程自行結束
@@ -142,11 +144,11 @@ class PomodoroPage(Page):
     # ------------------------------------------------------------------
 
     def _adjust(self, which, direction):
-        """調整工作/休息/總時長，限制於範圍內。"""
+        """調整工作/休息/總時長。work 走預設清單（clamp），其餘依範圍 clamp。"""
         if which == "work":
-            lo, hi, step = _WORK_BOUNDS
-            self._work_min = self._clamp(
-                self._work_min + direction * step, lo, hi)
+            idx = self._work_index()
+            idx = max(0, min(len(_WORK_PRESETS) - 1, idx + direction))
+            self._work_min = _WORK_PRESETS[idx]
         elif which == "break":
             lo, hi, step = _BREAK_BOUNDS
             self._break_min = self._clamp(
@@ -156,6 +158,19 @@ class PomodoroPage(Page):
             self._total_min = self._clamp(
                 self._total_min + direction * step, lo, hi)
         self._refresh_edit_labels()
+
+    def _work_index(self):
+        """回傳目前 work 值最接近的預設索引。"""
+        best_i, best_d = 0, 999999
+        for i in range(len(_WORK_PRESETS)):
+            d = abs(_WORK_PRESETS[i] - self._work_min)
+            if d < best_d:
+                best_d, best_i = d, i
+        return best_i
+
+    def _snap_work(self):
+        """將 work 值對齊到最接近的預設值（處理舊存檔的非預設值）。"""
+        self._work_min = _WORK_PRESETS[self._work_index()]
 
     @staticmethod
     def _clamp(value, lo, hi):
@@ -217,6 +232,7 @@ class PomodoroPage(Page):
             "pomodoro_total", self._total_min)
         self._alert = ConfigManager.get_setting(
             "pomodoro_alert", self._alert)
+        self._snap_work()  # 對齊到預設清單
         self._refresh_edit_labels()
         self._reset()
         # 停用自動環境光燈，避免覆蓋階段燈色
