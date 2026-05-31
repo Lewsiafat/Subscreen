@@ -15,6 +15,7 @@ A desktop sub-screen device based on [Pimoroni Presto](https://shop.pimoroni.com
 - **Weather Page** — Real-time weather data via async Open-Meteo API, swipe to navigate.
 - **Calendar Page** — Monthly calendar grid, today highlighted, tap to switch months.
 - **Market Page** — Real-time BTC/ETH via Binance WebSocket + SPY/AAPL/TWII/2330 via Stooq CSV API (disabled by default).
+- **Pomodoro Page** — "Tomato clock" cycling Work → Break until a configurable total time, with progress ring, tap-to-pause, and buzzer + RGB LED alerts. Alert intensity is configurable (off/normal/loud); loud blinks the LEDs and plays an urgent ~3 kHz siren.
 - **Pages Management** — Enable/disable and reorder pages via the Web Settings UI. Changes apply after reboot.
 - **Settings Overlay** — Swipe up from any page to open Settings; swipe down to dismiss. Settings slides up from the bottom as a full-screen overlay.
 - **City Search** — Search city name in Settings to automatically fill latitude/longitude via Open-Meteo Geocoding API. City name is shown on the Weather page.
@@ -67,6 +68,7 @@ src/                    # Source code (deploy to Pico root)
     weather_page.py     # Weather — Real-time data via Open-Meteo API
     calendar_page.py    # Calendar — Monthly grid, today highlight, touch navigation
     market_page.py      # Market — Binance WebSocket crypto + Stooq stock quotes
+    pomodoro_page.py    # Pomodoro — tomato clock with total/work/break control + loud alerts
     settings_page.py    # Settings — QR Code + IP for web UI access
   settings_server.py    # Web settings server with /api/pages, /api/settings endpoints
   wifi_manager.py       # WiFi state machine core

@@ -15,6 +15,7 @@
 - **天氣頁面** — 透過非同步 Open-Meteo API 取得即時天氣資訊，左右滑動切換頁面
 - **日曆頁面** — 月曆格式顯示，今日高亮，點擊左右切換月份
 - **行情頁面** — BTC/ETH 透過 Binance WebSocket 即時推送 + SPY/AAPL/TWII/2330 透過 Stooq CSV API 輪詢（預設停用）
+- **番茄鐘頁面** — 「番茄鐘」循環工作 → 休息直到可設定的總時長結束，含進度環、點擊暫停、蜂鳴器與 RGB LED 提示。提示強度可調（off/normal/loud）；loud 會閃爍 LED 並以約 3 kHz 警報音引起注意
 - **頁面管理** — 透過 Web 設定介面啟用/停用頁面並調整順序，重開機後生效
 - **設定頁 Overlay** — 從任何頁面往上滑即可開啟設定，往下滑收起。設定頁以全螢幕由下往上彈出的方式顯示
 - **城市搜尋** — 在設定的 Location 區塊搜尋城市名稱，透過 Open-Meteo Geocoding API 自動填入經緯度。城市名稱也會顯示在天氣頁面頂部
@@ -67,6 +68,7 @@ src/                    # 原始碼（部署至 Pico 根目錄）
     weather_page.py     # 天氣 — 透過 Open-Meteo API 取得即時資料
     calendar_page.py    # 日曆 — 月曆格、今日高亮、觸控月份切換
     market_page.py      # 行情 — Binance WebSocket 加密貨幣 + Stooq 股票報價
+    pomodoro_page.py    # 番茄鐘 — 總時長/工作/休息控制 + 響亮聲光提示
     settings_page.py    # 設定 — QR Code + IP，引導進入 Web 設定介面
   settings_server.py    # Web 設定伺服器，提供 /api/pages、/api/settings 端點
   wifi_manager.py       # WiFi 狀態機核心

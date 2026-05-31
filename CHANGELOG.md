@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.7.0] - 2026-05-31
+
+### Added
+- **Pomodoro Page** ("tomato clock") — cycles Work → Break until a configurable total session time elapses, with buzzer + RGB LED feedback at each boundary. IDLE `-`/`+` controls for work/break/total, running countdown with progress ring, tap-to-pause, and RESET.
+- `pomodoro_work` / `pomodoro_break` / `pomodoro_total` settings (defaults 25 / 5 / 120 min) with a Pomodoro section in the Web Settings UI.
+- `"pomodoro"` registered as an available page in `settings_server.py` and the `main.py` page builder.
+- `pomodoro_alert` setting (`off` / `normal` / `loud`, default `loud`) with an Alert dropdown in the Web Settings UI — controls phase-switch and session-done alert intensity.
+- `loud` alert mode blinks all 7 RGB LEDs and plays an urgent siren sweep at the piezo resonant frequency (~3 kHz) so the alert is far more noticeable.
+
+### Changed
+- `pomodoro_page.py` `_signal_phase` / `_signal_done` are now tiered by `pomodoro_alert`; new non-blocking `_blink_leds` and `_alarm` helpers, guarded by an `_alert_seq` generation counter so in-flight alerts abort cleanly on page exit/reset.
+
 ## [0.6.0] - 2026-02-25
 
 ### Added

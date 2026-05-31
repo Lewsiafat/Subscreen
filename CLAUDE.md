@@ -128,6 +128,7 @@ src/                    # All source code (deployed to Pico root)
     weather_page.py     # Weather — real-time data via Open-Meteo API
     calendar_page.py    # Calendar — monthly grid, today highlight, touch navigation
     market_page.py      # Market — Binance WebSocket crypto + Stooq stock quotes
+    pomodoro_page.py    # Pomodoro — tomato clock; total/work/break control + tiered (off/normal/loud) buzzer+LED alerts
     settings_page.py    # Settings — QR Code + web UI entry point
     demo_page.py        # Hello World demo page
   settings_server.py    # Web settings API (/api/settings, /api/pages, /api/backlight,
