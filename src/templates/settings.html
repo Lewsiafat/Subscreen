@@ -226,8 +226,17 @@
                        min="5" max="480" step="5" placeholder="120">
                 <span class="val">min</span>
             </div>
+            <div class="row">
+                <label>Alert</label>
+                <select id="pomoAlert">
+                    <option value="off">Off</option>
+                    <option value="normal">Normal</option>
+                    <option value="loud">Loud</option>
+                </select>
+            </div>
             <p class="hint">
                 Applied when you open the Pomodoro page.
+                Loud = bright LED blink + urgent buzzer.
             </p>
             <button class="btn btn-save" onclick="savePomodoro()">
                 Save Pomodoro
@@ -341,6 +350,9 @@
             if (s.pomodoro_total !== undefined)
                 document.getElementById('pomoTotal').value =
                     s.pomodoro_total;
+            if (s.pomodoro_alert !== undefined)
+                document.getElementById('pomoAlert').value =
+                    s.pomodoro_alert;
         };
         x.send();
     }
@@ -353,13 +365,15 @@
             showStatus('Enter work/break/total');
             return;
         }
+        var alert = document.getElementById('pomoAlert').value;
         var x = api('/api/settings', function(r) {
             if (r.ok) showStatus('Pomodoro saved');
             else showStatus('Failed to save pomodoro');
         });
         x.send('pomodoro_work=' + parseInt(work) +
                '&pomodoro_break=' + parseInt(brk) +
-               '&pomodoro_total=' + parseInt(total));
+               '&pomodoro_total=' + parseInt(total) +
+               '&pomodoro_alert=' + encodeURIComponent(alert));
     }
 
     function updateBl(pct) {
