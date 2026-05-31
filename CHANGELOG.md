@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.7.1] - 2026-05-31
+
+### Changed
+- Pomodoro **Work** duration is now a fixed preset list (10 / 15 / 30 / 45 min) instead of a 1–90 step-5 range. On-device `−`/`+` steps through the presets (clamped at the ends); the Web Settings Work field is now a matching dropdown.
+- Default `pomodoro_work` is now 30 (was 25, which is not in the preset list). Saved non-preset values snap to the nearest preset on page load.
+
 ## [0.7.0] - 2026-05-31
 
 ### Added
