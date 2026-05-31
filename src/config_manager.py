@@ -16,6 +16,7 @@ DEFAULT_SETTINGS = {
     "pomodoro_work": 25,
     "pomodoro_break": 5,
     "pomodoro_total": 120,
+    "pomodoro_alert": "loud",
 }
 
 

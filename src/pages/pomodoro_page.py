@@ -33,6 +33,11 @@ _WORK_BOUNDS = (1, 90, 5)
 _BREAK_BOUNDS = (0, 30, 1)
 _TOTAL_BOUNDS = (5, 480, 15)
 
+# 響亮提示參數 / Loud-alert tuning. 壓電蜂鳴器在共振峰附近聽感最大，
+# 故 loud 模式用 ~3kHz 掃頻而非低頻，以「更大聲」引起注意。
+_LOUD_FREQ = 3000
+_LOUD_FREQ_HI = 3800
+
 
 class PomodoroPage(Page):
     """番茄鐘頁面。
@@ -50,6 +55,10 @@ class PomodoroPage(Page):
         self._work_min = ConfigManager.get_setting("pomodoro_work", 25)
         self._break_min = ConfigManager.get_setting("pomodoro_break", 5)
         self._total_min = ConfigManager.get_setting("pomodoro_total", 120)
+        # 提示強度 off/normal/loud / Alert intensity
+        self._alert = ConfigManager.get_setting("pomodoro_alert", "loud")
+        # 提示世代序號：切換頁面/重置時遞增，讓進行中的閃爍/警報協程自行結束
+        self._alert_seq = 0
 
         # 計時狀態 / Timer state
         self._phase = PHASE_IDLE
@@ -206,6 +215,8 @@ class PomodoroPage(Page):
             "pomodoro_break", self._break_min)
         self._total_min = ConfigManager.get_setting(
             "pomodoro_total", self._total_min)
+        self._alert = ConfigManager.get_setting(
+            "pomodoro_alert", self._alert)
         self._refresh_edit_labels()
         self._reset()
         # 停用自動環境光燈，避免覆蓋階段燈色
@@ -389,21 +400,78 @@ class PomodoroPage(Page):
         self._set_leds((0, 0, 0))
 
     def _signal_phase(self):
-        """階段切換：設定燈色並短鳴一聲。"""
-        self._set_leds(self._phase_color())
-        asyncio.create_task(self._beep(880, 150, 1))
+        """階段切換：依提示強度給予聲光回饋。"""
+        self._alert_seq += 1
+        seq = self._alert_seq
+        color = self._phase_color()
+        if self._alert == "off":
+            self._set_leds(color)
+            return
+        if self._alert == "loud":
+            asyncio.create_task(self._blink_leds(seq, color, 6, 120, 100))
+            asyncio.create_task(self._alarm(seq, 4))
+        else:  # normal — 維持原行為
+            self._set_leds(color)
+            asyncio.create_task(self._beep(880, 150, 1))
 
     def _signal_done(self):
-        """結束：燈光轉藍並鳴三聲。"""
-        self._set_leds((0, 80, 255))
-        asyncio.create_task(self._beep(660, 200, 3))
+        """結束：依提示強度給予更強的聲光回饋。"""
+        self._alert_seq += 1
+        seq = self._alert_seq
+        done = (0, 80, 255)
+        if self._alert == "off":
+            self._set_leds(done)
+            return
+        if self._alert == "loud":
+            asyncio.create_task(self._blink_leds(seq, done, 12, 150, 120))
+            asyncio.create_task(self._alarm(seq, 8))
+        else:  # normal — 維持原行為
+            self._set_leds(done)
+            asyncio.create_task(self._beep(660, 200, 3))
 
     def _stop_feedback(self):
+        # 遞增世代序號，使進行中的閃爍/警報協程下次檢查時自行結束
+        self._alert_seq += 1
         if self._buzzer:
             try:
                 self._buzzer.set_tone(-1)
             except Exception:
                 pass
+
+    async def _blink_leds(self, seq, color, times, on_ms, off_ms):
+        """非阻塞閃爍 7 顆 LED times 次，結束後維持 color。
+
+        以 seq 對照 self._alert_seq；若期間頁面重置/離開則中止並不再動燈。
+        """
+        for _ in range(times):
+            if seq != self._alert_seq:
+                return
+            self._set_leds(color)
+            await asyncio.sleep_ms(on_ms)
+            if seq != self._alert_seq:
+                return
+            self._set_leds((0, 0, 0))
+            await asyncio.sleep_ms(off_ms)
+        if seq == self._alert_seq:
+            self._set_leds(color)
+
+    async def _alarm(self, seq, cycles):
+        """警報式蜂鳴：在壓電共振頻率附近快速掃頻，急促且聽感最大。"""
+        if not self._buzzer:
+            return
+        for _ in range(cycles):
+            if seq != self._alert_seq:
+                break
+            for freq in (_LOUD_FREQ, _LOUD_FREQ_HI):
+                try:
+                    self._buzzer.set_tone(freq)
+                except Exception:
+                    return
+                await asyncio.sleep_ms(90)
+        try:
+            self._buzzer.set_tone(-1)
+        except Exception:
+            pass
 
     async def _beep(self, freq, dur_ms, count):
         """非阻塞蜂鳴：響 count 次，每次 dur_ms 毫秒。"""
