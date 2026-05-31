@@ -46,7 +46,7 @@ IDLE → CONNECTING → CONNECTED ↔ (health check every 2s)
 
 Key modules:
 - `wifi_manager.py` — Core async state machine with event system (`on`/`off` callbacks)
-- `config_manager.py` — Versioned JSON persistence. Two stores: `wifi_config.json` (SSID/password, auto-migrates v1→v2) and `settings.json` (app settings — `timezone`, `weather_lat/lon`, `pages`, `ambient_leds`). Use `ConfigManager.get_setting(key, default)` / `set_setting(key, value)` for app settings.
+- `config_manager.py` — Versioned JSON persistence. Two stores: `wifi_config.json` (SSID/password, auto-migrates v1→v2) and `settings.json` (app settings — `timezone`, `weather_lat/lon`, `weather_location`, `pages`, `ambient_leds`, `backlight`, `pomodoro_work/break/total`, `pomodoro_alert`). Use `ConfigManager.get_setting(key, default)` / `set_setting(key, value)` for app settings.
 - `provisioning.py` — Web-based WiFi setup with captive portal (Apple/Android detection)
 - `web_server.py` / `dns_server.py` — Async HTTP + DNS servers for provisioning
 - `logger.py` — Lightweight logging with global/per-module levels and hook system
@@ -79,6 +79,10 @@ presto.set_backlight(0.5)          # 0.0–1.0
 presto.set_led_rgb(0, 255, 0, 0)  # LED index 0-6
 presto.connect()                    # Blocking WiFi (uses secrets.py)
 await presto.async_connect()        # Async WiFi
+
+# Buzzer (piezo) — from presto import Buzzer; buz = Buzzer(43)
+# buz.set_tone(freq); buz.set_tone(-1) to stop. NO volume control —
+# loudness comes from driving near the ~3 kHz resonant peak, not amplitude.
 ```
 
 ### Design Principles
@@ -90,7 +94,7 @@ await presto.async_connect()        # Async WiFi
 
 ### Page Routing
 
-`main.py` is event-driven: `wm.on("connected")` builds the enabled page sequence from the `pages` setting (clock/weather/calendar/market) and mounts SettingsPage as a vertical overlay; `wm.on("ap_mode_started")` swaps to `ApModePage`. SplashPage is the initial screen until WiFi resolves.
+`main.py` is event-driven: `wm.on("connected")` builds the enabled page sequence from the `pages` setting (clock/weather/calendar/market/pomodoro) and mounts SettingsPage as a vertical overlay; `wm.on("ap_mode_started")` swaps to `ApModePage`. SplashPage is the initial screen until WiFi resolves.
 
 ### Event System
 
